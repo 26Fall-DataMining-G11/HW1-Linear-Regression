@@ -1,0 +1,14 @@
+\begin{abstract}
+Commuters driving into Hsinchu Science Park on National Freeway~1 decide each morning whether
+to leave now or later. We forecast the car travel time of the 4.8\,km Zhubei--Hsinchu segment
+60 minutes ahead from 20 months of 5-minute toll-gantry data, using only information available
+at prediction time. A Ridge regression adds upstream travel time, calendar flags and
+workday$\times$\allowbreak time-slot interactions to the current travel time. On a held-out
+summer its peak-hour MAE is \res{test.ridgeC.peak}\,min (95\% CI
+\res{test.peakLo}--\res{test.peakHi}), within our \res{cfg.threshold}-minute decision threshold
+and \res{boot.persistence.peak.diff}\,min below persistence; the slot interactions are the most
+valuable feature group. Gradient boosting is better overall (test MAE \res{test.lgbm.mae} vs.\
+\res{test.ridgeC.mae}\,min) but worse in the peak. In routine peaks the model is only
+\res{boot.profile.peak.diff}\,min better than a historical per-slot average (CI includes 0); its
+value lies in rain and congestion onset.
+\end{abstract}

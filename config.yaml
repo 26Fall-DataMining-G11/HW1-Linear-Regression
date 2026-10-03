@@ -1,0 +1,96 @@
+# Single source of configuration for the HW1 pipeline (see hw1_spec.md).
+# [VERIFIED] = checked against real data by src/00_list_gantries.py / manual inspection.
+# [TEAM]     = team decision; justify in the paper before running src/06_final_test.py.
+
+timezone: Asia/Taipei
+seed: 20261002
+
+m04a:
+  base_url: https://tisvcloud.freeway.gov.tw/history/TDCS/M04A
+  vehicle_type: 31
+  # [VERIFIED] TravelTime is in seconds (free flow on the 4.8 km target ≈ 167 s ≈ 103 km/h).
+  travel_time_unit: seconds
+  # [VERIFIED] TimeInterval is the START of the 5-min bin: daily files run 00:00 … 23:55,
+  # and file TDCS_M04A_<date>_080000.csv carries TimeInterval 08:00.
+  # Treating it as the bin start is also the leakage-safe reading (bin end = start + 5 min).
+  time_interval: bin_start
+  bin_minutes: 5
+  # [VERIFIED] from results/gantry_pairs.csv (week of 2025-01-06).
+  segments:
+    target: [01F0880S, 01F0928S]      # 88.0K → 92.8K, crosses 竹北 interchange
+    upstream: [01F0750S, 01F0880S]    # nearest upstream southbound gantry pair (75.0K → 88.0K)
+    downstream: [01F0928S, 01F0950S]  # EDA only
+  list_gantries:
+    week_start: 2025-01-06
+    mileage_min: 700
+    mileage_max: 1000
+  download:
+    workers: 4
+    sleep_sec: 0.3
+    retries: 5
+    backoff_sec: 2.0
+    timeout_sec: 120
+
+period:
+  raw_start: 2025-01-01
+  raw_end: 2026-08-31
+  train_start: 2025-01-01
+  train_end: 2026-05-31
+  test_start: 2026-06-01
+  test_end: 2026-08-31
+  # extra days downloaded before raw_start so tt_lastweek exists from the first training day
+  lag_warmup_days: 7
+
+grid:
+  step_min: 15
+  t_start: "05:00"      # prediction time t ∈ [05:00, 20:00)
+  t_end: "20:00"
+  horizon_min: 60       # T = t + 60 ∈ [06:00, 21:00)
+  window_min: 15
+  ffill_max_steps: 2    # §4.6
+
+features:
+  peak_start: "07:00"   # [TEAM] confirm from fig_eda_profile
+  peak_end: "09:30"
+  long_holiday_min_days: 3
+  # workday_x_peak = is_workday × is_peak is identical to is_peak (is_peak already
+  # requires a workday), so it is perfectly collinear and excluded.
+  include_workday_x_peak: false
+  # [TEAM] school breaks (inclusive), K-12 calendar announced by the MOE; verify against the
+  # Hsinchu city/county education bureau calendar and cite it in the paper.
+  #   AY113: winter 1/21–2/10 (2nd semester starts 2025-02-11); summer 7/1–8/31 (AY114 starts 2025-09-01)
+  #   AY114: winter 1/24–2/22 (1/21–23 are make-up class days; classes resume 2026-02-23);
+  #          summer 7/1–8/30 (AY115 starts 2026-08-31)
+  school_breaks:
+    - [2025-01-21, 2025-02-10]
+    - [2025-07-01, 2025-08-31]
+    - [2026-01-24, 2026-02-22]
+    - [2026-07-01, 2026-08-30]
+
+weather:
+  station_id: "467571"   # CWA Hsinchu (新竹) station
+  station_type: cwb
+
+cv:
+  n_folds: 5
+  gap_days: 1
+  ridge_alphas: {start: -3, stop: 3, num: 13}      # logspace
+  lasso_alphas: {start: -3, stop: 0, num: 7}       # logspace (smaller values are slow with 143 features and never selected)
+  enet_l1_ratios: [0.1, 0.5, 0.9]
+  topk: 5
+  topk_sensitivity: [3, 8]
+  lgbm:
+    num_leaves: [15, 31, 63]
+    learning_rate: [0.03, 0.1]
+    max_estimators: 2000
+    early_stopping_rounds: 50
+    early_stopping_frac: 0.10
+
+evaluation:
+  peak_mae_threshold_min: 1.5   # [TEAM] justify
+  onset_delta_min: 2.0          # congestion onset slice: y − tt_now ≥ 2 min
+  bootstrap_B: 2000
+  hac_maxlags: 8
+  hac_sensitivity: [4, 16]
+  vif_flag: 10
+  top_errors: 5

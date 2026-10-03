@@ -1,0 +1,22 @@
+{
+  "cv_meets_threshold": true,
+  "cv_peak_mae_ridge_C": 1.114598082589469,
+  "final_model": "ridge_C",
+  "lgbm": {
+    "learning_rate": 0.1,
+    "num_leaves": 15
+  },
+  "peak_mae_threshold_min": 1.5,
+  "ridge_alpha": {
+    "A": 0.001,
+    "B_k3": 0.001,
+    "B_k5": 10.0,
+    "B_k8": 0.001,
+    "C": 316.22776601683796,
+    "C_minus_calendar": 0.001,
+    "C_minus_lags": 316.22776601683796,
+    "C_minus_upstream": 100.0,
+    "C_minus_weather": 316.22776601683796
+  },
+  "topk": 5
+}

@@ -1,0 +1,28 @@
+\section{Task Definition and Data}\label{sec:task}
+\paragraph{Task.} At prediction time $t$ (every 15 minutes) we predict $y$, the traffic-weighted
+mean car travel time (min) on the target segment over $[T,T{+}15\text{ min})$, $T=t+60$ min. With
+$\mathit{TT}_i$ the median travel time (s) and $n_i$ the vehicle count of 5-minute bin $i$,
+$y=\sum_i \mathit{TT}_i n_i / \sum_i n_i / 60$, the time a typical car experiences. One row is one
+(day, $t$) pair. The horizon and step match the decision ``leave now or 30--60 minutes later''.
+We keep $T\in[06{:}00,21{:}00)$: night traffic is free-flowing, would inflate accuracy, and lies
+outside the decision window.
+
+\paragraph{Data.} Travel times come from the Freeway Bureau TDCS \textsc{M04A} table (median
+gantry-to-gantry travel time per vehicle type, 5-minute bins), passenger cars only (commuters
+drive cars). The target segment is \res{cfg.seg.target} (88.0K--92.8K); the upstream segment is
+\res{cfg.seg.upstream} (75.0K--88.0K), immediately to the north. Hourly rainfall comes from the CWA
+Hsinchu station and working days from the DGPA calendar. We verified on raw files that travel time
+is in seconds and that time stamps mark the \emph{start} of each bin. Training covers
+\res{cfg.trainstart} to \res{cfg.trainend} (\res{data.daystrain} days, \res{data.rowstrain} rows,
+two Lunar New Years and a typhoon season); the held-out test set, the most recent data as in
+deployment, is \res{cfg.teststart} to \res{cfg.testend} (\res{data.daystest} days,
+\res{data.rowstest} rows) and was evaluated once, after the design was frozen. No 5-minute file
+was missing and \res{data.validPct}\% of bins are valid (travel time and count $>0$), so no row was
+dropped or imputed. $y$ ranges from \res{y.min} to \res{y.max}\,min (median \res{y.median}, 95th
+percentile \res{y.p95}; Table~\ref{tab:summary}). We keep the extremes: they are real jams, the
+cases a commuter most wants to foresee.
+
+\begin{table}[t]\centering\small
+\fitinput{tables/tab_data_summary}
+\caption{Summary statistics of the target and key features (training rows).}\label{tab:summary}
+\end{table}

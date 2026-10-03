@@ -1,0 +1,42 @@
+\section{Exploratory Feature Analysis}\label{sec:eda}
+All exploration uses training rows only.
+
+\paragraph{Daily profile (H3).} Workdays have a morning peak (median
+\res{profile.workdayPeakMedian}\,min at \res{profile.workdayPeakSlot}, twice the 2.9\,min
+free-flow time of 4.8\,km at 100\,km/h) and a smaller evening peak; non-working days have a
+late-morning leisure peak (\res{profile.nonworkdayPeakMedian}\,min at
+\res{profile.nonworkdayPeakSlot}) with a wider spread (Figure~\ref{fig:profile}). We define the
+peak window as workday $T\in[\res{cfg.peakStart},\res{cfg.peakEnd})$, which brackets the morning
+rise and fall. \textbf{H3:} calendar and time of day predict $y$ beyond the current state. The two
+day types differ in \emph{shape}, not only level, which a shared $\sin/\cos$ term cannot
+represent, so we add workday$\times$\allowbreak 15-minute-slot indicators.
+
+\begin{figure}[t]\centering
+\includegraphics[width=0.75\linewidth]{fig_eda_profile}
+\caption{Median travel time (band: IQR) by time of day of $T$, training rows.}\label{fig:profile}
+\end{figure}
+
+\paragraph{Persistence and upstream (H1, H2).} The current travel time is the most correlated
+feature ($|r|=\res{r.tt_now}$), followed by the upstream travel time ($|r|=\res{r.up_tt_now}$).
+Figure~\ref{fig:scatter} shows why persistence is imperfect at 60 minutes: many rows with a low
+current travel time end up congested (onset) and vice versa. The value one week earlier has the
+highest \emph{rank} correlation ($\rho=\res{rho.tt_lastweek}$): it captures the weekly routine.
+\textbf{H1:} recent travel times (lags, trend, last week) add information beyond \feat{tt\_now}.
+\textbf{H2:} upstream travel time adds information, because cars queuing upstream reach the
+segment within the hour. The lags are collinear (\feat{tt\_now} vs.\ \feat{tt\_lag15}:
+$r=\res{corr.now.lag}$, VIF \res{vifBlock.tt_now} and \res{vifBlock.tt_lag15};
+Table~\ref{tab:corr}); we keep both because their difference (the trend) signals onset.
+
+\begin{figure}[t]\centering
+\includegraphics[width=0.78\linewidth]{fig_eda_scatter}
+\caption{Target $y$ vs.\ current (left) and upstream (right) travel time, minutes.}\label{fig:scatter}
+\end{figure}
+\begin{table}[t]\centering\small
+\fitinput{tables/tab_eda_corr}
+\caption{Pearson correlation among lag/upstream features and their VIF ($^{\ast}$: VIF $\geq 10$).}\label{tab:corr}
+\end{table}
+
+\paragraph{Rain (H4).} Rain in the last hour raises mean $y$ by a similar amount off-peak
+(+\res{rain.offpeak}\,min) and at peak (+\res{rain.peak}\,min). \textbf{H4:} rain lengthens travel
+time more at peak, when the road is near capacity. The data give little support, but commuters
+commonly believe it, so we test it with \feat{rain\_x\_peak}.

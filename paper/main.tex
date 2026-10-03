@@ -1,0 +1,56 @@
+% NYCU Data Mining HW1. Compile with tectonic / latexmk, or on Overleaf (acl.sty and
+% acl_natbib.bst from https://github.com/acl-org/acl-style-files are included next to this file).
+%
+% Two builds from the same sources:
+%   \judgetrue  -> anonymous copy for the LLM TA Judge (Team ID only, no names or student IDs)
+%   \judgefalse -> E3 copy HW1_G11_report.pdf (names, student IDs, member contributions)
+\newif\ifjudge
+\judgetrue
+
+\documentclass[11pt]{article}
+\usepackage[preprint]{acl}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{times,latexsym,graphicx,booktabs,amsmath,xcolor,tikz,microtype,adjustbox}
+\emergencystretch=1.5em   % let TeX stretch a line rather than overflow it
+\usetikzlibrary{positioning,arrows.meta}
+\graphicspath{{figures/}}
+\input{tables/numbers}                 % every number: \res{key}, generated from results/*.json
+% feature names: monospace, line breaks allowed after each underscore
+\DeclareRobustCommand{\brkus}{\textunderscore\allowbreak}
+\DeclareRobustCommand{\feat}[1]{\ifmmode\text{\ttfamily\let\_\brkus #1}%
+  \else\leavevmode{\ttfamily\let\_\brkus #1}\fi}   % also safe inside $...$
+% generated tables: shrink to the column (or page, for table*) width only when too wide
+\newcommand{\fitinput}[2][\linewidth]{\adjustbox{max width=#1}{\input{#2}}}
+% p-values: "$p<0.001$" when the generated value is "<0.001", else "$p=$value"
+\makeatletter
+\def\pv@lt{$<$0.001}
+\newcommand{\pv}[1]{\expandafter\let\expandafter\pv@v\csname res@#1\endcsname
+  \ifx\pv@v\pv@lt$p<0.001$\else$p=\res{#1}$\fi}
+\makeatother
+\newcommand{\repourl}{\url{https://github.com/26Fall-DataMining-G11/HW1-Linear-Regression}}
+
+\title{Leave Now or Later? Next-Hour Freeway Travel-Time Forecasting into Hsinchu Science Park with Linear Models}
+\ifjudge
+\author{Team G11 \\ \repourl}
+\else
+\author{Team G11 \\
+  Name One (student ID) \quad Name Two (student ID) \quad Name Three (student ID) \\
+  \repourl}
+\fi
+
+\begin{document}
+\maketitle
+\input{sections/00_abstract}
+\input{sections/01_introduction}
+\input{sections/02_related_work}
+\input{sections/03_task_data}
+\input{sections/04_eda}
+\input{sections/05_method}
+\input{sections/06_setup}
+\input{sections/07_results}
+\input{sections/08_analysis}
+\input{sections/09_conclusion}
+\input{sections/10_contributions}
+\bibliography{references}
+\end{document}

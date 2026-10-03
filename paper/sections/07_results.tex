@@ -1,0 +1,62 @@
+\section{Results}\label{sec:results}
+\begin{table*}[t]\centering\small
+\fitinput[\textwidth]{tables/tab_main}
+\caption{Main results in minutes (best per column in bold). CV: mean $\pm$ std over five
+time-ordered folds. Decision threshold: peak MAE $\leq\res{cfg.threshold}$\,min.}\label{tab:main}
+\vspace{2mm}
+\fitinput[0.75\textwidth]{tables/tab_ablation}
+\caption{Feature ablation, Ridge with $\alpha$ tuned per set on the same folds (CV, min).
+$\Delta$MAE: set minus C; $p$: paired $t$-test over folds.}\label{tab:ablation}
+\end{table*}
+
+\paragraph{Cross-validation.} Ridge on Set~C reaches a CV MAE of
+\res{cv.ridgeC.mae}\,$\pm$\,\res{cv.ridgeC.maeStd}\,min and a peak MAE of
+\res{cv.ridgeC.peak}\,$\pm$\,\res{cv.ridgeC.peakStd}\,min, within the threshold
+(Table~\ref{tab:main}), and beats persistence by \res{ttest.persistence.absdiff}\,min
+(\pv{ttest.persistence.p}). LightGBM is better overall by \res{ttest.lgbm.absdiff}\,min
+(\pv{ttest.lgbm.p}) but worse in the peak (\res{cv.lgbm.peak} vs.\ \res{cv.ridgeC.peak}). A
+likely reason: the trees must learn the workday morning shape from hour and weekday splits, which
+our slot indicators give directly. The ablation agrees: without them Ridge's peak MAE (1.12) is
+worse than LightGBM's. Off-peak, the trees capture non-linear jam dynamics a linear model cannot.
+
+\paragraph{Ablation.} Set~C improves on Set~A by \res{ttest.A.absdiff}\,min (\pv{ttest.A.p})
+and on top-\res{sel.topk} selection by \res{ttest.B.absdiff}\,min (\pv{ttest.B.p}), more than
+twice the fold std (Table~\ref{tab:ablation}). Correlation ranking picks only travel-time features
+(\res{sel.topkStable}) and misses the time-of-day structure, so a larger $k$ barely helps (top-8:
+\res{cv.ridgeBk8.mae}). Removing the slot indicators alone costs
+\res{ttest.minus.slot.absdiff}\,min and raises peak MAE from \res{cv.ridgeC.peak} to 1.12\,min;
+the upstream group is second (\res{ttest.minus.upstream.absdiff}\,min).
+
+\paragraph{Held-out test.} On the test set (\res{test.n} rows) Ridge~C obtains MAE
+\res{test.ridgeC.mae}, $R^2$ \res{test.ridgeC.r2} and a peak MAE of \res{test.ridgeC.peak}\,min (95\%
+CI \res{test.peakLo}--\res{test.peakHi}), which \res{test.meets} the threshold. Day-block bootstrap
+differences (other minus ours): persistence \res{boot.persistence.diff}\,min
+[\res{boot.persistence.lo}, \res{boot.persistence.hi}]; LightGBM \res{boot.lgbm.diff}\,min
+[\res{boot.lgbm.lo}, \res{boot.lgbm.hi}] overall but \res{boot.lgbm.peak.diff}\,min
+[\res{boot.lgbm.peak.lo}, \res{boot.lgbm.peak.hi}] in the peak. The ranking matches CV. Test
+errors are lower than CV errors for \emph{every} method, the training mean included
+(\res{test.mean.mae} vs.\ \res{cv.mean.mae}): the summer is an easier period, not evidence that our
+model generalises better than CV suggests.
+
+\paragraph{The threshold separates few methods.} Only persistence fails it (test peak MAE
+\res{test.persistence.peak}); even the training mean passes (\res{test.mean.peak}), because workday
+peaks are regular. Meeting it is necessary, not sufficient; the relevant comparison is the
+historical profile a commuter knows by habit. In the peak Ridge~C is only
+\res{boot.profile.peak.diff}\,min better on test ([\res{boot.profile.peak.lo},
+\res{boot.profile.peak.hi}]; CV \res{cv.ridgeC.peak} vs.\ \res{cv.profile.peak}). Its clear gains
+are overall (\res{boot.profile.diff}\,min [\res{boot.profile.lo}, \res{boot.profile.hi}]) and in
+non-routine slices (Table~\ref{tab:slices}): rain hours (\res{slice.rain.ridgeC} vs.\
+\res{slice.rain.profile} for the profile and \res{slice.rain.lgbm} for LightGBM) and congestion onset
+($y-{}$\feat{tt\_now}${}\geq\res{cfg.onset}$\,min: \res{slice.onset.ridgeC} vs.\
+\res{slice.onset.profile}, persistence \res{slice.onset.persistence}). Onset remains the hard case,
+far above the no-onset error (\res{slice.no_onset.ridgeC}), and LightGBM is slightly better there
+(\res{slice.onset.lgbm}).
+
+\begin{table*}[t]\centering\small
+\fitinput[\textwidth]{tables/tab_slices}
+\caption{Test MAE (minutes) by slice; $n$ = test rows. Onset: $y-\text{tt\_now}\geq\res{cfg.onset}$\,min.}\label{tab:slices}
+\vspace{2mm}
+\fitinput[0.8\textwidth]{tables/tab_errors}
+\caption{Five largest absolute test errors of Ridge~C (min; error = actual $-$ predicted; rain in
+mm/h). Flags: W workday, P peak, b/a day before/after a long holiday, S school break.}\label{tab:errors}
+\end{table*}

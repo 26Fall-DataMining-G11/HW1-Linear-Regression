@@ -1,0 +1,58 @@
+\section{Analysis}\label{sec:analysis}
+\paragraph{Coefficients.} We fit OLS on standardized Set~C (training rows) with Newey--West
+standard errors \citep{newey1987} (\res{cfg.hacLags} lags = 2 hours), which are up to
+\res{coef.seRatio}$\times$ the naive ones. Exactly redundant columns are dropped (\res{coef.nFeat}
+remain, same fit). For low-VIF features Ridge and OLS agree within \res{coef.gapOk}\,min/SD; only
+the two flow features (VIF $\geq 10$) differ more (up to \res{coef.gap}), so we interpret only
+low-VIF coefficients (Table~\ref{tab:coef}).
+
+\begin{table}[t]\centering\scriptsize
+\fitinput{tables/tab_coefficients}
+\caption{OLS coefficients (min per SD of the feature) with 95\% CI and $p$ from HAC standard
+errors; $^{\ast}$: VIF $\geq 10$; slot indicators in Figure~\ref{fig:slot}.}\label{tab:coef}
+\end{table}
+\begin{figure}[t]\centering
+\includegraphics[width=0.78\linewidth]{fig_slot_effects}
+\caption{Workday and non-workday slot effects (min, 95\% HAC CI), other features fixed.}\label{fig:slot}
+\end{figure}
+
+\paragraph{H1 (persistence): \res{hyp.H1.verdict}.} \feat{tt\_now} ($\beta=\res{coef.tt_now.beta}$),
+\feat{tt\_lastweek} (\res{coef.tt_lastweek.beta}) and \feat{tt\_trend} (\res{coef.tt_trend.beta})
+are significant; \feat{tt\_lag60} is not (\pv{coef.tt_lag60.p}). Removing the lag group costs
+\res{hyp.H1.diff}\,min (\pv{hyp.H1.p}): statistically clear, practically negligible (under
+1\,s) once the current state and slot pattern are known.
+
+\paragraph{H2 (upstream): \res{hyp.H2.verdict}.} \feat{up\_tt\_now} (\res{coef.up_tt_now.beta}
+[\res{coef.up_tt_now.lo}, \res{coef.up_tt_now.hi}]) is as large as the segment's own travel time,
+and removing the upstream group costs \res{hyp.H2.diff}\,min (\pv{hyp.H2.p}), the largest loss
+outside the calendar features, consistent with upstream queues reaching the segment within the hour.
+
+\paragraph{H3 (calendar): \res{hyp.H3.verdict}.} Removing calendar and slot features costs
+\res{hyp.H3.diff}\,min (\pv{hyp.H3.p}), almost all from the slots
+(\res{ttest.minus.slot.absdiff}\,min; other calendar flags \res{ttest.minus.calendar.absdiff}\,min,
+\pv{ttest.minus.calendar.p}). Weekday effects are positive relative to Sunday, largest on
+Friday; the day before a long holiday adds \res{coef.pre_long_holiday.raw}\,min
+(\pv{coef.pre_long_holiday.p}). The workday slot effect peaks at \res{slotfx.wdTime}, the
+non-workday one at \res{slotfx.nwdTime} (Figure~\ref{fig:slot}). Averaged over
+\res{cfg.peakStart}--\res{cfg.peakEnd}, however, the workday excess is not significant
+(\res{hyp.H3.contrast}\,min, \pv{hyp.H3.contrastP}) because the workday effect drops sharply
+after 08:30: the peak differs in \emph{timing}, not in level across the window.
+
+\paragraph{H4 (rain at peak): \res{hyp.H4.verdict}.} Rain matters all day (\feat{rain\_1h}:
+\res{coef.rain_1h.raw}\,min per mm, \pv{coef.rain_1h.p}), but the peak interaction is zero
+($\beta=\res{coef.rain_x_peak.beta}$, \pv{coef.rain_x_peak.p}) and the weather group does not
+change CV MAE (\res{hyp.H4.diff}\,min, \pv{hyp.H4.p}). A median shower (1.5\,mm/h) adds only
+0.07\,min, and only 6.6\% of training rows have rain.
+
+\paragraph{Error analysis.} The five worst test days hold \res{test.topDaysSqShare}\% of the squared
+error, while the bias is near zero (mean residual \res{test.residMean}\,min). The largest errors
+(Table~\ref{tab:errors}) are non-recurrent events the features cannot see. \#1 is a jam starting
+from free flow (\feat{tt\_now} 3.1\,min), typical of an incident. \#3 and \#4 are jams that kept
+growing while the slot pattern expected easing; \#4 is the first morning of the Dragon Boat
+Festival holiday, an early holiday exodus while non-workday slots expect a late-morning peak, with
+upstream at 26.9\,min, beyond its 95th percentile (18.5), where one linear term cannot capture
+queue spill-back. \#5 and \#2 fall on \res{err.worstDay} with 37--44\,mm/h of rain, 25 times a
+median shower: the model under-predicted as the jam built (10:30) and over-predicted after it
+cleared (11:45). We did not check incident logs, so ``incident'' is our reading of the pattern.
+First fixes to try: a heavy-rain indicator and an upstream$\times$\allowbreak trend interaction.
+

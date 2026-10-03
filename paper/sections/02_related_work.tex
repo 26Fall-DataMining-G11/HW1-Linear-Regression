@@ -1,0 +1,14 @@
+\section{Related Work}
+Short-term traffic forecasting has moved from time-series models to machine learning
+\citep{vlahogianni2014}. Seasonal ARIMA exploits weekly recurrence \citep{williams2003};
+gradient-boosted trees capture non-linear interactions and are strong on tabular travel-time data
+\citep{zhang2015,ke2017}; graph neural networks model propagation over a network
+\citep{li2018,yu2018} but need many sensors. We use boosting as our non-linear reference.
+Closest to us, \citet{kwon2000} regress freeway travel time on current flow, occupancy and
+historical travel times and find that current measurements dominate at short horizons;
+\citet{rice2004} show that a regression on current travel time with time-of-day-varying
+coefficients is simple and hard to beat. Our workday$\times$\allowbreak slot indicators play the role
+of their time-varying intercept. We differ by using Taiwan toll-gantry (ETC) data instead of loop
+detectors, an upstream-segment feature, rain and holiday features, and a decision threshold tied
+to a concrete user. Lagged travel times are collinear, the setting ridge regression was designed
+for \citep{hoerl1970}, and serially correlated, so we use HAC standard errors \citep{newey1987}.

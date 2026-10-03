@@ -1,0 +1,72 @@
+{
+  "calendar": {
+    "days": 608,
+    "workdays": 409
+  },
+  "days_test": 92,
+  "days_train": 516,
+  "dropped_feature_nan": 0,
+  "dropped_y_nan": 0,
+  "feature_nan_by_column": {},
+  "ffilled_values": {
+    "flow_now": 0,
+    "tt_lag15": 0,
+    "tt_lag60": 0,
+    "tt_lastweek": 0,
+    "tt_now": 0,
+    "up_flow_now": 0,
+    "up_tt_now": 0
+  },
+  "final_rows": 36480,
+  "grid_rows": 36480,
+  "grid_rows_test": 5520,
+  "grid_rows_train": 30960,
+  "period": {
+    "raw_end": "2026-08-31",
+    "raw_start": "2025-01-01",
+    "test_end": "2026-08-31",
+    "test_start": "2026-06-01",
+    "train_end": "2026-05-31",
+    "train_start": "2025-01-01"
+  },
+  "raw_coverage": {
+    "downstream": {
+      "expected_bins": 175104,
+      "records": 175104,
+      "valid_frac": 0.9999885782163743,
+      "valid_records": 175102
+    },
+    "target": {
+      "expected_bins": 175104,
+      "records": 175104,
+      "valid_frac": 0.9999657346491229,
+      "valid_records": 175098
+    },
+    "upstream": {
+      "expected_bins": 175104,
+      "records": 175104,
+      "valid_frac": 0.9999771564327485,
+      "valid_records": 175100
+    }
+  },
+  "rows_test": 5520,
+  "rows_train": 30960,
+  "segments": {
+    "downstream": [
+      "01F0928S",
+      "01F0950S"
+    ],
+    "target": [
+      "01F0880S",
+      "01F0928S"
+    ],
+    "upstream": [
+      "01F0750S",
+      "01F0880S"
+    ]
+  },
+  "weather": {
+    "hours": 14616,
+    "missing_hours": 1
+  }
+}

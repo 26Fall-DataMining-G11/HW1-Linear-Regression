@@ -1,0 +1,19 @@
+\section{Introduction}
+Every workday morning the southbound lanes of National Freeway~1 between the Zhubei and Hsinchu
+interchanges fill with commuters heading to Hsinchu Science Park; the 4.8\,km stretch goes from
+about 3\,min at free flow to a median of \res{profile.workdayPeakMedian}\,min at
+\res{profile.workdayPeakSlot}. Roadside signs show only current conditions. A commuter at home who
+knows the conditions \emph{one hour ahead} can decide to leave now or to wait. We ask:
+
+\emph{Using only information available at prediction time, can a linear model with upstream and
+calendar features forecast the segment travel time 60 minutes ahead accurately enough---peak MAE
+at most \res{cfg.threshold} minutes---to support a commuter's departure decision?}
+
+We state four hypotheses (H1 persistence, H2 upstream propagation, H3 calendar, H4 rain at peak)
+and test them with Ridge regression under a leakage-free, time-ordered protocol. Contributions:
+(i)~workday$\times$\allowbreak slot interactions, motivated by the different \emph{shape} of workday
+and non-workday profiles, are the most valuable feature group (Section~\ref{sec:results});
+(ii)~upstream travel time adds information beyond the segment's own state
+(Section~\ref{sec:analysis}); (iii)~the linear model beats gradient boosting in the peak but not
+overall, and in routine peaks barely beats a historical average, so its value lies in
+non-routine conditions.

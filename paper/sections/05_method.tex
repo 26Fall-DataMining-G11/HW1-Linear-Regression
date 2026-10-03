@@ -1,0 +1,49 @@
+\section{Method}
+\begin{figure}[t]\centering\small
+\begin{tikzpicture}[node distance=3.5mm, every node/.style={draw, rounded corners=2pt, align=center,
+  inner sep=3pt, font=\scriptsize}, >={Stealth[length=1.5mm]}]
+\node (raw) {M04A 5-min\\travel times};
+\node (agg) [right=of raw] {15-min traffic-\\weighted windows};
+\node (feat) [right=of agg] {lags, upstream,\\calendar, rain};
+\node (model) [below=of feat] {standardize\\$\rightarrow$ Ridge};
+\node (pred) [left=of model] {$\hat y$: travel time\\at $t{+}60$ (min)};
+\node (aux) [left=of pred] {calendar,\\rainfall};
+\draw[->] (raw) -- (agg); \draw[->] (agg) -- (feat); \draw[->] (feat) -- (model);
+\draw[->] (model) -- (pred); \draw[->, dashed] (aux) |- ([yshift=-7mm]pred.south) -| (model);
+\end{tikzpicture}
+\caption{Pipeline: only records whose 5-minute bin ends at or before $t$ enter the features.}\label{fig:pipeline}
+\end{figure}
+
+\paragraph{Leakage rule.} A 5-minute record may be used at $t$ only if its bin ends at or before
+$t$, rainfall only for the hour ending at or before $t$; M04A records a trip when the car reaches
+the downstream gantry, so even the newest value is a few minutes old. Calendar features describe
+$T$, known in advance. An automated test corrupts all post-$t$ data and checks that no feature
+changes.
+
+\paragraph{Features (Set C, \res{data.nfeatC} columns).} \emph{Base:} \feat{tt\_now},
+\feat{flow\_now} over $[t{-}15,t)$. \emph{Lags (H1):} \feat{tt\_lag15}, \feat{tt\_lag60},
+\feat{tt\_trend} (= \feat{tt\_now} $-$ \feat{tt\_lag15}, a growing queue), \feat{tt\_lastweek}
+(the weekly routine). \emph{Upstream (H2):} \feat{up\_tt\_now}, \feat{up\_flow\_now}, demand
+arriving within the hour. \emph{Calendar (H3):} day-of-week one-hots, \feat{is\_workday},
+\feat{pre/post\_long\_holiday} (holidays of $\geq 3$ days shift trips to the day before and after),
+\feat{school\_break} (no school runs), $\sin/\cos$ of the hour of $T$. \emph{Slot interactions
+(H3):} \res{data.nSlot} indicators, one per (workday flag, 15-minute slot of $T$). \emph{Weather
+(H4):} \feat{is\_peak}, \feat{rain\_1h}, \feat{rain\_x\_peak}.
+
+\paragraph{Model.} We use Ridge regression \citep{hoerl1970} because Set~C has collinear lags (VIF
+up to \res{vifBlock.tt_lag15}) and exact dependencies (the slot indicators span
+\feat{is\_workday}, \feat{is\_peak} and the hour terms) that make OLS coefficients unstable.
+Features are standardized inside a scikit-learn pipeline; $\alpha$ is chosen from 13 log-spaced
+values in $[10^{-3},10^{3}]$ by CV MAE on training data only. The selected $\alpha=\res{sel.alphaC}$
+lies at the edge, but CV MAE changes by only 0.007\,min over the whole grid (0.808 at
+$\alpha\leq 1$, 0.801 at $10^{3}$) and larger values were worse: with \res{data.rowstrain} rows the
+penalty mainly stabilises coefficients, not accuracy.
+
+\paragraph{Rejected alternatives.} Lasso and Elastic Net reach the same CV MAE as Ridge
+(\res{cv.lasso.mae}, \res{cv.enet.mae} vs.\ \res{cv.ridgeC.mae}; \pv{ttest.lasso.p},
+\res{ttest.enet.p}) but drop one feature of each correlated pair arbitrarily. Ridge on $\log y$
+has a lower MAE (\res{cv.logy.mae}, \pv{ttest.logy.p}), as it down-weights rare extreme jams,
+but a similar peak MAE (\res{cv.logy.peak} vs.\ \res{cv.ridgeC.peak}), a higher RMSE
+(\res{cv.logy.rmse} vs.\ \res{cv.ridgeC.rmse}) and multiplicative coefficients. The peak drives the
+decision and we interpret coefficients in minutes, so we keep Ridge on $y$ and report $\log y$
+alongside (Table~\ref{tab:main}).

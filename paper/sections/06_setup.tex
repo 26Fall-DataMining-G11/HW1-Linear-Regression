@@ -1,0 +1,27 @@
+\section{Experimental Setup}
+\paragraph{Validation.} Shuffled $K$-fold would let the model learn from days after the validation
+day, so inside the training period we use five time-ordered, expanding-window folds over
+\emph{dates}, with a one-day gap before each validation block because $y$ looks 60 minutes ahead.
+Five folds give validation blocks of 86 days (5,160 rows), long enough to contain workdays and
+holidays, while the first fold still trains on several months. Fold indices are stored once and
+reused by every method; all tuning happens inside them; final models are refit on all training data.
+
+\paragraph{Baselines.} \emph{Trivial:} training mean; persistence ($\hat y=$\,\feat{tt\_now}, what
+the roadside sign shows); historical profile (mean $y$ by workday flag and slot, what a commuter
+knows by habit). \emph{Simple:} OLS on \feat{tt\_now}. \emph{Strong:} LightGBM \citep{ke2017} on
+Set~A (leaves $\{15,31,63\}$, learning rate $\{0.03,0.1\}$, early stopping on the last 10\% of each
+training fold; selected \res{sel.lgbmLeaves} leaves, rate \res{sel.lgbmLr}).
+
+\paragraph{Feature sets.} A (raw): \feat{tt\_now}, \feat{flow\_now}, hour, weekday,
+\feat{rain\_1h}. B: the $k=\res{sel.topk}$ Set~C features with the largest $|r|$, selected inside
+each training fold ($k=5$ matches Set~A; $k\in\{3,8\}$ as sensitivity). C: ours. All sets use
+Ridge with $\alpha$ tuned per set on the same folds, so only the features change.
+
+\paragraph{Metrics and threshold.} MAE (primary: lost or wasted minutes grow linearly with the
+error), RMSE (penalises large misses), $R^2$, and \emph{peak MAE} on workday rows with
+$T\in[\res{cfg.peakStart},\res{cfg.peakEnd})$, where the commuter decides. The forecast is
+decision-useful if peak MAE $\leq\res{cfg.threshold}$\,min: the workday median rises by about
+3\,min from free flow to the peak (Figure~\ref{fig:profile}), and an error above half that swing
+cannot tell ``leave now'' from ``leave later''. CV results are mean $\pm$ std over folds; pairs are
+compared by a paired $t$-test over fold MAEs and, on test, by a day-block bootstrap
+($B=\res{cfg.bootstrapB}$; resampling whole days keeps within-day correlation).

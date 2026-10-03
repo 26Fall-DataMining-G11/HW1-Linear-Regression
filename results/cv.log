@@ -1,0 +1,40 @@
+lgbm leaves=15 lr=0.03: MAE 0.7676 ± 0.0568
+lgbm leaves=15 lr=0.1: MAE 0.7637 ± 0.0588
+lgbm leaves=31 lr=0.03: MAE 0.7677 ± 0.0570
+lgbm leaves=31 lr=0.1: MAE 0.7638 ± 0.0519
+lgbm leaves=63 lr=0.03: MAE 0.7700 ± 0.0587
+lgbm leaves=63 lr=0.1: MAE 0.7757 ± 0.0589
+ridge A                    alpha=0.001    MAE 1.0176 ± 0.0565  peak 1.2664
+ridge C                    alpha=1000     MAE 0.8011 ± 0.0583  peak 0.8021
+ridge B_k5                 alpha=10       MAE 0.9508 ± 0.0599  peak 1.1431
+ridge B_k3                 alpha=0.001    MAE 1.0387 ± 0.0385  peak 1.2817
+ridge B_k8                 alpha=0.001    MAE 0.9448 ± 0.0599  peak 1.1679
+ridge C_minus_lags         alpha=316.228  MAE 0.8133 ± 0.0577  peak 0.8119
+ridge C_minus_upstream     alpha=1000     MAE 0.8447 ± 0.0640  peak 0.8190
+ridge C_minus_calendar     alpha=316.228  MAE 0.8044 ± 0.0528  peak 0.7761
+ridge C_minus_slot         alpha=316.228  MAE 0.9016 ± 0.0656  peak 1.1146
+ridge C_minus_caltime      alpha=0.001    MAE 0.9125 ± 0.0576  peak 1.0899
+ridge C_minus_weather      alpha=1000     MAE 0.8015 ± 0.0594  peak 0.7963
+
+CV summary (MAE ± std | peak MAE):
+  Training mean            1.452 ± 0.096 | 1.078
+  Persistence              1.072 ± 0.056 | 1.714
+  Historical profile       1.165 ± 0.087 | 0.829
+  OLS on tt_now            1.071 ± 0.050 | 1.339
+  LightGBM (Set A)         0.764 ± 0.059 | 0.899
+  Ridge (Set A)            1.018 ± 0.057 | 1.266
+  Ridge (Set B, k=5)       0.951 ± 0.060 | 1.143
+  Ridge (Set C, ours)      0.801 ± 0.058 | 0.802
+  lgbm_A_vs_ridge_C                        Δ=-0.0374  t=-3.52  p=0.0244
+  persistence_vs_ridge_C                   Δ=+0.2707  t=+14.12  p=0.0001
+  ridge_A_vs_ridge_C                       Δ=+0.2165  t=+21.76  p=0.0000
+  ridge_B_k5_vs_ridge_C                    Δ=+0.1497  t=+16.55  p=0.0001
+  ridge_C_minus_lags_vs_ridge_C            Δ=+0.0122  t=+6.41  p=0.0030
+  ridge_C_minus_upstream_vs_ridge_C        Δ=+0.0435  t=+9.03  p=0.0008
+  ridge_C_minus_calendar_vs_ridge_C        Δ=+0.0033  t=+1.08  p=0.3391
+  ridge_C_minus_slot_vs_ridge_C            Δ=+0.1004  t=+14.72  p=0.0001
+  ridge_C_minus_caltime_vs_ridge_C         Δ=+0.1114  t=+32.06  p=0.0000
+  ridge_C_minus_weather_vs_ridge_C         Δ=+0.0004  t=+0.60  p=0.5782
+  lasso_vs_ridge_C                         Δ=-0.0043  t=-2.14  p=0.0989
+  enet_vs_ridge_C                          Δ=-0.0040  t=-2.12  p=0.1016
+  ridge_logy_vs_ridge_C                    Δ=-0.0482  t=-10.79  p=0.0004

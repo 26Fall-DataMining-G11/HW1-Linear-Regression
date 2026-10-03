@@ -1,0 +1,20 @@
+\section{Conclusion and Limitations}
+\textbf{Answer:} yes, within the stated threshold. A leakage-free Ridge model forecasts next-hour
+travel time with a peak MAE of \res{cv.ridgeC.peak}\,min in CV and \res{test.ridgeC.peak}\,min on the
+held-out summer, against \res{cfg.threshold}\,min. Slot interactions (H3) and upstream travel time
+(H2) are the main additions to persistence; extra lags (H1), holiday flags and rain are
+statistically visible but practically small, and a peak-specific rain effect (H4) is not supported.
+
+\textbf{Recommendation:} on an ordinary workday a commuter's sense of the usual peak is almost as
+good as the model (test peak MAE \res{test.profile.peak} vs.\ \res{test.ridgeC.peak}\,min); the
+forecast is worth checking when the day is not ordinary---rain or a queue already
+forming upstream---where it cuts the profile's error (rain \res{slice.rain.ridgeC} vs.\
+\res{slice.rain.profile}; onset \res{slice.onset.ridgeC} vs.\ \res{slice.onset.profile}\,min).
+
+\textbf{Limitations:} (1)~one segment, direction and horizon; (2)~a single summer test period,
+inside the school break and easier for every method, so a winter or typhoon season could rank
+methods differently; (3)~the 1.5\,min threshold proved loose, ruling out only persistence; one
+derived from commuters' cost of arriving late would be stricter; (4)~a linear model cannot
+represent onset and spill-back, the largest remaining errors, and incidents are not observed.
+Next experiment: a heavy-rain indicator and an upstream$\times$\allowbreak trend interaction, tested
+on a winter period.

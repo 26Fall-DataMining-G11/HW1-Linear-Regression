@@ -1,0 +1,22 @@
+.venv/
+__pycache__/
+.pytest_cache/
+*.pyc
+.DS_Store
+# raw downloads (re-fetchable); the small filtered parquet in data/processed/ is committed
+data/raw/
+results/download.log
+results/dryrun/
+# LaTeX build products
+paper/*.aux
+paper/*.log
+paper/*.out
+paper/*.bbl
+paper/*.blg
+paper/*.fls
+paper/*.fdb_latexmk
+# course handout and local build/submission files (not republished)
+2026 NYCU Data Mining HW1.pdf
+*.zip
+HW1_*_report*.pdf
+paper/*.pdf
