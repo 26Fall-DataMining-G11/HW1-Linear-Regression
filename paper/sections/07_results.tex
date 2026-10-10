@@ -14,9 +14,9 @@ $\Delta$MAE: set minus C; $p$: paired $t$-test over folds.}\label{tab:ablation}
 \res{cv.ridgeC.peak}\,$\pm$\,\res{cv.ridgeC.peakStd}\,min, within the threshold
 (Table~\ref{tab:main}), and beats persistence by \res{ttest.persistence.absdiff}\,min
 (\pv{ttest.persistence.p}). LightGBM is better overall by \res{ttest.lgbm.absdiff}\,min
-(\pv{ttest.lgbm.p}) but worse in the peak (\res{cv.lgbm.peak} vs.\ \res{cv.ridgeC.peak}). A
+(\pv{ttest.lgbm.p}; Holm-adjusted $p=0.12$, so this CV gap alone is not conclusive) but worse in the peak (\res{cv.lgbm.peak} vs.\ \res{cv.ridgeC.peak}). A
 likely reason: the trees must learn the workday morning shape from hour and weekday splits, which
-our slot indicators give directly. The ablation agrees: without them Ridge's peak MAE (1.12) is
+our slot indicators give directly. The ablation agrees: without them Ridge's peak MAE (1.115) is
 worse than LightGBM's. Off-peak, the trees capture non-linear jam dynamics a linear model cannot.
 
 \paragraph{Ablation.} Set~C improves on Set~A by \res{ttest.A.absdiff}\,min (\pv{ttest.A.p})
@@ -24,8 +24,10 @@ and on top-\res{sel.topk} selection by \res{ttest.B.absdiff}\,min (\pv{ttest.B.p
 twice the fold std (Table~\ref{tab:ablation}). Correlation ranking picks only travel-time features
 (\res{sel.topkStable}) and misses the time-of-day structure, so a larger $k$ barely helps (top-8:
 \res{cv.ridgeBk8.mae}). Removing the slot indicators alone costs
-\res{ttest.minus.slot.absdiff}\,min and raises peak MAE from \res{cv.ridgeC.peak} to 1.12\,min;
-the upstream group is second (\res{ttest.minus.upstream.absdiff}\,min).
+\res{ttest.minus.slot.absdiff}\,min and raises peak MAE from \res{cv.ridgeC.peak} to 1.115\,min;
+the upstream group is second (\res{ttest.minus.upstream.absdiff}\,min). All differences in
+Table~\ref{tab:ablation} with $p<0.05$ remain significant after Holm's correction (largest
+adjusted $p=0.018$, the lag group); the calendar-flag and weather groups do not.
 
 \paragraph{Held-out test.} On the test set (\res{test.n} rows) Ridge~C obtains MAE
 \res{test.ridgeC.mae}, $R^2$ \res{test.ridgeC.r2} and a peak MAE of \res{test.ridgeC.peak}\,min (95\%

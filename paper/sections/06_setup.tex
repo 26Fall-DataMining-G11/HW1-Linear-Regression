@@ -10,7 +10,10 @@ reused by every method; all tuning happens inside them; final models are refit o
 the roadside sign shows); historical profile (mean $y$ by workday flag and slot, what a commuter
 knows by habit). \emph{Simple:} OLS on \feat{tt\_now}. \emph{Strong:} LightGBM \citep{ke2017} on
 Set~A (leaves $\{15,31,63\}$, learning rate $\{0.03,0.1\}$, early stopping on the last 10\% of each
-training fold; selected \res{sel.lgbmLeaves} leaves, rate \res{sel.lgbmLr}).
+training fold; selected \res{sel.lgbmLeaves} leaves, rate \res{sel.lgbmLr}). We give it Set~A rather than Set~C on purpose: the 120 slot indicators
+hand-code the time-of-day shape a linear model cannot learn, whereas trees can split hour and
+weekday directly, so Set~A is the boosting model's natural raw input and the comparison asks
+whether hand-built structure lets a linear model match learned structure.
 
 \paragraph{Feature sets.} A (raw): \feat{tt\_now}, \feat{flow\_now}, hour, weekday,
 \feat{rain\_1h}. B: the $k=\res{sel.topk}$ Set~C features with the largest $|r|$, selected inside
@@ -23,5 +26,6 @@ $T\in[\res{cfg.peakStart},\res{cfg.peakEnd})$, where the commuter decides. The f
 decision-useful if peak MAE $\leq\res{cfg.threshold}$\,min: the workday median rises by about
 3\,min from free flow to the peak (Figure~\ref{fig:profile}), and an error above half that swing
 cannot tell ``leave now'' from ``leave later''. CV results are mean $\pm$ std over folds; pairs are
-compared by a paired $t$-test over fold MAEs and, on test, by a day-block bootstrap
+compared by a paired $t$-test over fold MAEs, with Holm's correction \citep{holm1979} across
+all 13 fold-level comparisons, and, on test, by a day-block bootstrap
 ($B=\res{cfg.bootstrapB}$; resampling whole days keeps within-day correlation).
